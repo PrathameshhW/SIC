@@ -1,0 +1,167 @@
+Configure Module To Each Router
+HWC-2T
+
+Assign IP-Address to each
+
+1)Configure Router
+
+On Every Router In R#
+
+	conf t
+	line vty 0 4
+	password vtypa55
+	login
+	exit
+	enable secret enpa55
+
+Part1
+2) Configure OSPF on Routers
+
+On Router 1 in R(config)
+
+	router ospf 1
+	network 192.168.1.0 0.0.0.255 area 0
+	network 10.1.1.0 0.0.0.3 area 0
+
+On Router 2 in R(config)
+
+	router ospf 2
+	network 10.1.1.0 0.0.0.3 area 0
+	network 10.2.2.0 0.0.0.3 area 0
+
+On Router 3 in R(config)
+
+	router ospf 3
+	network 192.168.3.0 0.0.0.255 area 0
+	network 10.2.2.0 0.0.0.3 area 0
+
+Test Connectivity from both Server PC-A and PC-B
+
+	>ping 192.168.3.5
+
+Test Connnectivity from PC-C
+
+	>ping 192.168.1.5
+	>ping 192.168.1.6
+
+** Ospf Md5 authentication
+
+On every router in R#
+
+	conf t
+	router ospf 1
+	area 0 authentication message-digest
+	exit
+
+On Router R1(config)#
+
+	interface s0/1/0
+	ip ospf message-digest-key 1 md5 MD5pa55
+	exit
+
+On Router R2(config)#
+	
+	interface s0/1/0
+	ip ospf message-digest-key 1 md5 MD5pa55
+	exit
+	interface s0/1/1
+	ip ospf message-digest-key 1 md5 MD5pa55
+	exit
+
+On Router R3(config)#
+
+	interface s0/1/0
+	ip ospf message-digest-key 1 md5 MD5pa55
+	exit
+
+** Verify MD5 authentication
+
+On Router R1#
+
+	show ip ospf interface
+
+	output will be Youngest key id is 1
+
+PART 2
+
+Go to the PC-A Services > NTP > Put NTP on > Authentication on > key = 1, password = NTPpa55
+
+Go on R1#
+Check the date if it show right or not
+
+	show clock
+
+On every router in R#
+
+	conf t
+	ntp server 192.168.1.5
+	ntp update-calendar
+
+Now check the date if it shows right or not
+	
+	show clock
+
+Configure NTP authentication on the all routers in R(config)#
+
+	ntp authenticate
+	ntp trusted-key 1
+	ntp authentication-key 1 md5 NTPpa55
+
+Timestamps log messages on Every Router R(config)#
+
+	service timestamps log datetime msec
+
+Loggin Host on every router R(config)#
+
+	logging host 192.168.1.6
+
+Check the logging on every router, output should be 2 messages lines logged. In R#
+
+	show logging
+
+Now go to the PC-B Services > Syslog > A table should be there
+
+PART 3
+
+1) Configure Domain name on R3 in R3(config)#
+
+	ip domain-name tyit.com
+	username SSHadmin privilege 15 secret sshpa55
+	line vty 0 4
+	login local
+	transport input ssh
+	exit
+	crypto key generate rsa
+	
+	Enter 1024
+
+	exit
+	show ip ssh
+	conf t
+	ip ssh time-out 90
+	ip ssh authentication-retries 2
+	ip ssh version 2
+	exit
+
+In R3# 
+
+	show ip ssh
+
+2) Now to the PC-C command prompt and enter the command
+	
+	>telnet 192.168.3.1 (Should fail)
+	>ssh -l SSHadmin 192.168.3.1
+		Password: sshpa55
+		R3#
+
+3) Check from te R2# 
+	
+	ssh -v 2 -l SSHadmin 10.2.2.1
+
+	Enter wrong passwords Entries should be for only 2
+	Again enter the above command and timout should be expired after 90 	seconds
+	
+	And last time again enter the above command and give right password you can access the R3 command line from R2
+
+	Practical complete
+	

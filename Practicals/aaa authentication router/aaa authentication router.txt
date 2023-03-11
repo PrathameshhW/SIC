@@ -1,0 +1,53 @@
+exit
+line vty 0 4
+password vtypa55
+login
+enable secret enpa55
+router ospf 1
+network 192.168.1.0 0.0.0.255 area 0
+exit
+router ospf 1
+area 0 authentication message-digest
+int gig0/0
+ip ospf message-digest-key 1 md5 md5pa55
+exit
+exit
+show ip ospf interface
+
+Ping from PC0
+ping 192.168.1.3(Successful)
+
+Ping from PC1
+ping 192.168.1.2(Successful)
+
+conf t
+username admin secret adminpa55
+aaa new-model
+aaa authentication login default local
+line console 0
+login authentication default
+end
+exit
+
+User Access verification
+Username: admin
+Password: adminpa55
+
+Enable Pass Verification
+Password: enpa55
+
+
+en
+conf t
+ip domain-name tyit.com
+crypto key generate rsa
+
+1024
+
+aaa authentication login SSH-LOGIN local
+line vty 0 4
+login authentication SSH-LOGIN
+transport input ssh
+
+Ping from both PC's
+ssh -l Admin 192.168.1.1
