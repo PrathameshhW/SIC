@@ -1,0 +1,128 @@
+Console Password = conpa55
+
+1) Configure Console Password on Every router
+
+	line console 0
+	password conpa55
+	login 
+	exit
+
+	line vty 0 4
+	password vtypa55
+	login
+	exit
+
+	enable secret enpa55
+	exit
+
+	ip domain-name tyit.com
+	username admin secret adminpa55
+	line vty 0 4
+	login local
+	exit
+
+	crypto key generate rsa
+
+2) Static routing on R1(config)#
+
+	ip route 10.2.2.0 255.255.255.252 10.1.1.2
+	ip route 192.168.3.0 255.255.255.0 10.1.1.2
+
+  Static routing on R2(config)#
+
+	ip route 192.168.1.0 255.255.255.0 10.1.1.1
+	ip route 192.168.3.0 255.255.255.0 10.2.2.1
+
+  Static routing on R3(config)#
+
+	ip route 192.168.1.0 255.255.255.0 10.2.2.2
+	ip route 10.1.1.0 255.255.255.252 10.2.2.2
+
+3) Verifying Basic connectivity from PC-A to PC-C
+
+	>ping 192.168.3.3 (Successfull)
+	>ssh -l admin 10.2.2.2
+	>Web browser = 192.168.1.3
+
+4) Verifying security technology package in R3#
+
+	show version
+
+   Install the security package R3(config)#
+
+	license boot module c1900 technology-package securityk9 (Enter yes)
+	exit
+	copy run start
+	reload
+
+   Enter the User Access Verification 
+	
+	Password = conpa55
+	Enable router 
+	Password = enpa55
+
+In R3#
+	
+	show version (security ke9 enabled)
+
+5) Create an Internal and external zone
+
+	zone security IN-ZONE
+	exit
+	zone security IN-ZONE
+	exit
+
+6) Create an ACL
+
+	access-list 101 permit ip 192.168.3.0 0.0.0.255 any
+	class-map type inspect match-all IN-NET-CLASS-MAP
+	match access-group 101
+	exit
+	policy-map type inspect IN-2-OUT-PMAP
+	class type inspect IN-NET-CLASS-MAP
+	inspect
+	exit
+	exit
+	zone-pair security IN-2-OUT-ZPAIR source IN-ZONE destination OUT-ZONE
+	service-policy type inspect IN-2-OUT-PMAP
+	exit
+
+In R3(config)#
+
+	
+	int gig0/0
+	zone-member security IN-ZONE
+	exit
+	int se0/1/0
+	zone-member security OUT-ZONE
+	exit
+
+In R#
+
+	copy run start
+	reload
+
+7) Ping from PC-C to Server
+	
+	>ping 192.168.1.3 (Successfull)
+	>ssh -l admin 10.2.2.2 (Password = adminpa55)
+	
+
+8) In R3 User access verification Pass = conpa55 , en = enpa55
+
+R3#
+	show policy-map type inspect zone-pair sessions
+
+Go on PC-A cmd 
+	
+	>ssh -l admin 10.2.2.2 (Password = adminpa55)
+	>ping 192.168.3.3 (Should be Unsuccessfull)
+
+Now go to the R2# and ping 
+
+	ping 192.168.3.3 (Should be Unsuccessfull)
+	Success rate is 0 percent (0/5)
+
+Practical Complete
+
+	

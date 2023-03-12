@@ -1,0 +1,70 @@
+Entered the commands on R1, Central, SW1, SW2, SWA, SWB
+
+enable secret enpa55
+line console 0
+password conpa55
+login
+ip domain-name tyit.com
+username admin secret adminpa55
+line vty 0 4
+login local
+crypto key generate rsa
+
+Enter the command on central Central#
+
+	show spanning-tree
+
+1) Determine Central as Primary root bridge Central(config)#
+
+	spanning-tree vlan 1 root primary
+	exit
+	show spanning-tree [This bridge is the root]
+
+2) Determine SW1 as Secondary root bridge SW1(config)#
+
+	spanning-tree vlan 1 root secondary
+
+Enabling PORT fast on all accesss ports SWA(config)#
+
+	interface range f0/1 - 4
+	spanning-tree portfast
+	exit
+	interface range f0/1 - 4
+	spanning-tree bpduguard enable
+
+Enable root guard SW1(config)#
+
+	int range fa0/23 - 24
+	spanning-tree guard root
+
+In SWA(config)#
+	
+	int range fa0/1-22
+	switchport mode access
+	switchport port-security
+	switchport port-security maximum 2
+	switchport port-security violation shutdown
+	switchport port-security mac-address sticky
+
+In SWA# and SWB#
+
+	show port-security interface f0/1
+
+In SWA# and SWB#
+
+	int range f0/5-22
+	shutdown
+
+3) Veriy Connectivtiy
+
+Ping from C1 to C2
+	
+	>ping 10.1.1.11 (Successfull)
+
+Ping from C1 to D1
+
+	>ping 10.1.1.14 (Successfull)
+
+Check port Security on SWA# and SWB#
+
+	show port-security int fa0/1

@@ -1,0 +1,118 @@
+Assign IP address and Connection
+
+On Every router In R(config)#
+
+	enable secret enpa55
+	line console 0
+	password conpa55
+	login
+	exit
+	ip domain-name tyit.com
+	username admin secret adminpa55
+	line vty 0 4
+	exit
+	crypto key generate rsa [1024]
+
+Ospf Routing on R1(config)#
+
+	router ospf 1
+	network 192.168.1.0 0.0.0.255 area 0
+	network 10.1.1.0 0.0.0.3 area 0
+	exit
+
+Ospf Routing on R2(config)#
+
+	router ospf 1
+	network 10.1.1.0 0.0.0.3 area 0
+	network 10.2.2.0 0.0.0.3 area 0
+
+Ospf Routing on R3(config)#
+
+	router ospf 1
+	network 10.2.2.0 0.0.0.3 area 0
+	network 10.2.2.0 0.0.0.3 area 0
+
+1) Check Security on R1#
+
+	show version
+ 	conf t
+	license boot module c1900 technology-package securityk9 [yes]
+	copy run start
+	reload
+
+Enter User Access Verification Password=conpa55, en=enpa55
+
+	show version [securityk9 installed]
+
+2) Check Connectivity
+
+From PC-A
+
+	>ping 192.168.3.2 (Successfull)
+
+From PC-C
+
+	>ping 192.168.1.2 (Successfull)
+
+3) Create and IOS configuration directory flash
+
+In R1#
+
+	mkdir ipsdir
+	conf t
+	ip ips config location flash:ipsdir
+	ip ips name iosips
+	ip ips notify log
+	exit
+	clock set 18:17:44 12 MAR 2023
+	conf t
+	service timestamps log datetime msec
+	logging host 192.168.1.50
+	ip ips signature-category
+	category all
+	retired true
+	exit
+	category ios_ips basic
+	retired false
+	exit
+	exit
+	
+	int gig0/0
+	ip ips iosips out
+	exit
+
+4) Verify Ips using the show command R1#
+ 
+	show ip ips all
+	
+5) Change the event, action of signature R1(config)#
+
+	ip ips signature-definition
+	signature 2004 0
+	status
+	retired false
+	enabled true
+	exit
+	engine
+	event-action produce-alert 
+	event-action deny-packet-inline
+	exit
+	exit
+	exit
+	
+6) Verify IPS R1#
+
+	show ip ips all
+
+7) Ping from PC C
+
+	>ping 192.168.1.2 (Unsuccessfull)
+
+8) Ping for PC A
+
+	>ping 192.168.3.2 (Successfull)
+
+
+9) Go to Services > SYSLOG > Messages should be displayed
+
+Practical complete

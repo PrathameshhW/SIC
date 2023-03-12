@@ -19,7 +19,7 @@ Enable Secret on Routers R(config)#
 	line vty 0 4
 	login local
 	exit
-	crypto key generate rsa === 1024
+	crypto key generate rsa [1024]
 	
 3) Loopback address on R2(config)#
 
@@ -116,10 +116,10 @@ Verify PCA canoot ping R2
 
 Enter the following commands on R2(config)#
 
-	access-list 120 permit icmp any any echo-reply
-	access-list 120 permit icmp any any unreachable
-	access-list 120 deny icmp any any
-	access-list 120 permit ip any any
+access-list 120 permit icmp any any echo-reply
+access-list 120 permit icmp any any unreachable
+access-list 120 deny icmp any any
+access-list 120 permit ip any any
 
 Verify PC-A can ping R2
 
@@ -131,9 +131,10 @@ Enter the following commadns on R3(config)#
 	int gig0/1
 	ip access-group 110 in
 
+	access-list 100 permit tcp 10.0.0.0 0.255.255.255 host 192.168.3.1 eq 22
 	access-list 100 deny ip 10.0.0.0 0.255.255.255 any
-	access-list 100 deny ip 172.16.0.0 0.15.255.255 any
-	access-list 100 deny ip 192.168.0.0 0.0.255.255 any
+	access-list 100 deny ip 172.16.0.0 0.255.255.255 any
+	access-list 100 deny ip 192.168.0.0 0.0.0.255 any
 	access-list 100 deny ip 127.0.0.0 0.255.255.255 any
 	access-list 100 deny ip 224.0.0.0 15.255.255.255 any 
 	access-list 100 permit ip any any
