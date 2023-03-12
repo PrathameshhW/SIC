@@ -1,0 +1,132 @@
+Entered the IPV6 address 
+
+Enable secret on Every router
+	
+	enable secret enpa55
+
+IP configuration in router R1(config)#
+
+	int gig0/0
+	ipv6 address 2001:DB8:1:10::1/64
+	ipv6 address FE80::1 link-local
+	no shut
+	exit
+	int gig0/1
+	ipv6 address 2001:DB8:1:11::1/64
+	ipv6 address FE80::1 link-local
+	no shut
+	int se0/1/0
+	pv6 address 2001:DB8:1:1::1/64
+	ipv6 address FE80::1 link-local
+	no shut
+	exit
+
+IP configuration router R2(config)#
+
+	int se0/1/0
+	ipv6 address 2001:DB8:1:1::2/64
+	ipv6 address FE80::2 link-local
+	no shut
+	int se0/1/1
+	ipv6 address 2001:DB8:1:2::2/64
+	ipv6 address FE80::2 link-local
+	no shut 
+	exit
+
+IP configuration router R3(config)#
+
+	int gig0/0
+	ipv6 address 2001:DB8:1:30::1/64
+	ipv6 address FE80::3 link-local
+	no shut
+	exit
+	int se0/1/0
+	ipv6 address 2001:DB8:1:2::1/64
+	ipv6 address FE80::3 link-local
+	no shut
+
+Enabling IPV6 Routing on R1(config)#
+
+	ipv6 unicast-routing
+	ipv6 route 2001:DB8:1:2::0/64 2001:DB8:1:1::2
+	ipv6 route 2001:DB8:1:30::0/64 2001:DB8:1:1::2
+
+Enabling IPV6 Routing on R2(config)#
+
+	ipv6 unicast-routing
+	ipv6 route 2001:DB8:1:10::0/64 2001:DB8:1:1::1
+	ipv6 route 2001:DB8:1:11::0/64 2001:DB8:1:1::1
+	ipv6 route 2001:DB8:1:30::0/64 2001:DB8:1:2::1
+	
+Enabling IPV6 Routing on R3(config)#
+
+	ipv6 unicast-routin
+	ipv6 route 2001:DB8:1:10::0/64 2001:DB8:1:2::2
+	ipv6 route 2001:DB8:1:11::0/64 2001:DB8:1:2::2
+	ipv6 route 2001:DB8:1:1::0/64 2001:DB8:1:2::2
+
+Check from PC-A for connectivity
+
+	>ping 2001:DB8:1:30::30 (Successfull)
+
+Check from PC-B for connectivity
+	
+	>ping 2001:DB8:1:30::30 (Successfull)
+
+
+** Configure, Apply and Verify and IPV6 ACL **
+
+Configure ACL on the Interface 
+
+On R1(config)#
+
+	ipv6 access-list BLOCK_HTTP
+	deny tcp any host 2001:DB8:1:30::30 eq www
+	deny tcp any host 2001:DB8:1:30::30 eq 443
+	permit ipv6 any any
+	exit
+	int gig0/1
+	ipv6 traffic-filter BLOCK_HTTP in
+	exit
+
+Verify ACL implementation
+
+1) Go to PC-A web browser and type
+	
+	"http://2001:DB8:1:30::30" (Successfull)
+
+	Now Check on https
+	
+	"https://2001:DB8:1:30::30" (Successfull)
+	
+
+2) Go to PC-B web browser and type
+
+	"http://2001:DB8:1:30::30" (Request Timeout)
+	
+	Now Check on https
+
+	"https://2001:DB8:1:30::30" (Request Timeout)
+	
+	Ping 
+	
+	>ping 2001:DB8:1:30::30 (Successfull)
+
+Apply ACL on the interface in R3(config)#
+
+	ipv6 access-list BLOCK_ICMP
+	deny icmp any any
+	permit ipv6 any any
+	exit
+	int gig0/0
+	ipv6 traffic-filter BLOCK_ICMP out
+	exit
+
+3) Go to PC-B and PC-A cmd
+	
+	>ping 2001:DB8:1:30::30 (Destination host unreachable)
+
+4) Go to PC-A web browser
+
+	http://2001:DB8:1:30::30 (Successfull)
+	

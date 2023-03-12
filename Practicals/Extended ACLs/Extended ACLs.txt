@@ -1,0 +1,62 @@
+Assigned the IP Address to each component
+
+1) After assigning go to R1(config)#
+
+	line vty 0 4
+	password vtypa55
+	login
+	exit
+	enable secret enpa55
+	access-list 100 permit tcp 172.22.34.64 0.0.0.31 host 172.22.34.62 eq ftp
+	access-list 100 permit icmp 172.22.34.64 0.0.0.31 host 172.22.34.62
+	int gig0/0
+	ip access-group 100 in
+
+2) Ping from PC1 to S1
+	
+	>ping 172.22.34.62(First Request Timed out)
+	>(Ping again Ping should be successfull)
+
+	Check PC1 is allowed to FTP access or not
+	>ftp 172.22.34.62(Successful)
+		Username: cisco
+		Password: cisco
+		
+		To exit from ftp command line use >quit
+
+3) Ping from PC1 TO PC2
+
+	>ping 172.22.34.98(Destination Host Unreachable)
+
+
+** Configure Apply and Verify Extended Named ACL
+
+1) ACL to permit HTTP access and ICMP in R1(config)#
+
+	ip access-list extended HTTP_ONLY
+	permit tcp 172.22.34.96 0.0.0.15 host 172.22.34.62 eq www
+	permit icmp 172.22.34.96 0.0.0.15 host 172.22.34.62
+	exit
+	int gig0/1
+	ip access-group HTTP_ONLY in
+	exit
+
+2) Verify ACL implementation
+	
+	Ping from PC2 
+	>ping 172.22.34.62 (Successfull)
+	>ftp 172.22.34.62 (Disconnect)
+
+	Check from the web browser type URL
+	"http://172.22.34.62"
+
+	A page will appear it means http access successfully set.
+
+3) Ping from Both PC
+	
+	In PC2
+	>ping 172.22.34.66 (Destination host unreachable)
+
+	Both pc are pinging server but not each other.
+
+	Practical Complete.

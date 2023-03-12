@@ -50,4 +50,4 @@ login authentication SSH-LOGIN
 transport input ssh
 
 Ping from both PC's
-ssh -l Admin 192.168.1.1
+ssh -l admin 192.168.1.1
